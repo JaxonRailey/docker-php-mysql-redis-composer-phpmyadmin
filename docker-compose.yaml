@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: mysql:8.0.30
+    container_name: MySQL
+    restart: always
+    volumes:
+      - ./.docker/mysql/data/:/var/lib/mysql
+      - ./.docker/mysql/my.cnf:/etc/my.cnf
+      - ./.docker/mysql/dump/:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - 3306:3306
+
+  web:
+    container_name: Web
+    restart: always
+    build: ./.docker/php/
+    depends_on:
+      - db
+    volumes:
+       - ./www/:/var/www/html/
+       - ./.docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    ports:
+      - 80:80
+
+  composer:
+    image: composer:2.3
+    container_name: Composer
+    command: ["composer", "install"]
+    depends_on:
+      - web
+    volumes:
+      - ./www/:/app/
+
+  redis:
+    build: ./.docker/redis/
+    container_name: Redis
+    restart: always
+    depends_on:
+      - web
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpMyAdmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      PMA_USER: root
+      PMA_PASSWORD: password
+    links:
+      - db
+    depends_on:
+      - db
+      - web
+    ports:
+      - 81:80
