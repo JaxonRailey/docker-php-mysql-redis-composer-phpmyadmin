@@ -17,7 +17,7 @@ echo 'Time cached every 5 secs with Redis: ' . $date . '<br><br>';
 
 $host   = 'db';
 $user   = 'root';
-$pass   = 'password';
+$pass   = 'ciaociao';
 $dbname = 'universe';
 
 // MySQL connection
